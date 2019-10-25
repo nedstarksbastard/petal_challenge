@@ -102,3 +102,26 @@ if __name__ == '__main__':
     results_all['user_id,n,sum,min,max'] = pd.Series(results_all.astype(str).values.tolist()).str.join(',')
     results_all[['user_id,n,sum,min,max']].sort_index().to_csv('data/solution.csv')
 
+/*
+def iter_chunk_by_id(file):
+    """generator to read the csv in chunks of user_id records. Each next call of fenerator will give a df for a user"""
+
+    csv_reader = pd.read_csv(file, compression='gzip', iterator=True, chunksize=10000, header=0, error_bad_lines=False)
+    chunk = pd.DataFrame()
+    for l in csv_reader:
+        l[['id', 'everything_else']] = l[
+            'user_id|account_id|amount|desc|date|type|misc'].str.split('|', 1, expand=True)
+        hits = l['id'].astype(float).diff().dropna().nonzero()[0]
+        if not len(hits):
+            # if all ids are same
+            chunk.append(l[['user_id|account_id|amount|desc|date|type|misc']])
+        else:
+            start = 0
+            for index,id in enumerate(hits):
+                new_id = hits[index]
+                chunk.append(l[['user_id|account_id|amount|desc|date|type|misc']].iloc[start:id, :])
+                yield chunk
+                start = new_id
+                chunk = pd.DataFrame(chunk[['user_id|account_id|amount|desc|date|type|misc']].iloc[new_id:, :])
+    yield chunk
+  */
