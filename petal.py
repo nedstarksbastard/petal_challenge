@@ -48,25 +48,6 @@ def compute_stats(user_df_in):
     return user_df_out
 
 
-# def iter_chunk_by_id(file):
-#     """generator to read the csv in chunks of user_id records. Each next call of fenerator will give a df for a user"""
-#
-#     csv_reader = pd.read_csv(file, compression='gzip', iterator=True, chunksize=1, header=0, error_bad_lines=False)
-#     first_chunk = csv_reader.get_chunk()
-#     id = int(first_chunk.iloc[0,0].split('|')[0])
-#     chunk = pd.DataFrame(first_chunk)
-#     for l in csv_reader:
-#         new_id = int(l.iloc[0,0].split('|')[0])
-#         if id == new_id:
-#             id = new_id
-#             chunk = chunk.append(l)
-#             continue
-#         id = new_id
-#         yield chunk
-#         chunk = pd.DataFrame(l)
-#     yield chunk
-
-
 def process_csv(filename):
     """main function to read the csv and produce the resulting dataframe"""
 
