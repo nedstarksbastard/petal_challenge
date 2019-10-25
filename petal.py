@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import multiprocessing as mp
+from chunk_iter import iter_chunk_by_id
 
 
 def escaped_split(s, delim="|"):
@@ -47,23 +48,23 @@ def compute_stats(user_df_in):
     return user_df_out
 
 
-def iter_chunk_by_id(file):
-    """generator to read the csv in chunks of user_id records. Each next call of fenerator will give a df for a user"""
-
-    csv_reader = pd.read_csv(file, compression='gzip', iterator=True, chunksize=1, header=0, error_bad_lines=False)
-    first_chunk = csv_reader.get_chunk()
-    id = int(first_chunk.iloc[0,0].split('|')[0])
-    chunk = pd.DataFrame(first_chunk)
-    for l in csv_reader:
-        new_id = int(l.iloc[0,0].split('|')[0])
-        if id == new_id:
-            id = new_id
-            chunk = chunk.append(l)
-            continue
-        id = new_id
-        yield chunk
-        chunk = pd.DataFrame(l)
-    yield chunk
+# def iter_chunk_by_id(file):
+#     """generator to read the csv in chunks of user_id records. Each next call of fenerator will give a df for a user"""
+#
+#     csv_reader = pd.read_csv(file, compression='gzip', iterator=True, chunksize=1, header=0, error_bad_lines=False)
+#     first_chunk = csv_reader.get_chunk()
+#     id = int(first_chunk.iloc[0,0].split('|')[0])
+#     chunk = pd.DataFrame(first_chunk)
+#     for l in csv_reader:
+#         new_id = int(l.iloc[0,0].split('|')[0])
+#         if id == new_id:
+#             id = new_id
+#             chunk = chunk.append(l)
+#             continue
+#         id = new_id
+#         yield chunk
+#         chunk = pd.DataFrame(l)
+#     yield chunk
 
 
 def process_csv(filename):
@@ -100,28 +101,5 @@ if __name__ == '__main__':
     results_all = pd.concat(results)
     results_all.reset_index(inplace=True)
     results_all['user_id,n,sum,min,max'] = pd.Series(results_all.astype(str).values.tolist()).str.join(',')
-    results_all[['user_id,n,sum,min,max']].sort_index().to_csv('data/solution.csv')
+    results_all[['user_id,n,sum,min,max']].to_csv('data/solution.csv', index=False)
 
-/*
-def iter_chunk_by_id(file):
-    """generator to read the csv in chunks of user_id records. Each next call of fenerator will give a df for a user"""
-
-    csv_reader = pd.read_csv(file, compression='gzip', iterator=True, chunksize=10000, header=0, error_bad_lines=False)
-    chunk = pd.DataFrame()
-    for l in csv_reader:
-        l[['id', 'everything_else']] = l[
-            'user_id|account_id|amount|desc|date|type|misc'].str.split('|', 1, expand=True)
-        hits = l['id'].astype(float).diff().dropna().nonzero()[0]
-        if not len(hits):
-            # if all ids are same
-            chunk.append(l[['user_id|account_id|amount|desc|date|type|misc']])
-        else:
-            start = 0
-            for index,id in enumerate(hits):
-                new_id = hits[index]
-                chunk.append(l[['user_id|account_id|amount|desc|date|type|misc']].iloc[start:id, :])
-                yield chunk
-                start = new_id
-                chunk = pd.DataFrame(chunk[['user_id|account_id|amount|desc|date|type|misc']].iloc[new_id:, :])
-    yield chunk
-  */
